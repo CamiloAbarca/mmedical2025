@@ -8,25 +8,25 @@
         <br>
         <br>
         <div class="menu">
-                <b-button class="btnMenu" to="/">
-                    <b-icon icon="clipboard-data" scale="1" variant="danger" style="margin-right: 8px;"></b-icon>
-                    Dashboard
-                </b-button>
-                <br>
-                <b-button class="btnMenu" to="/equipos">
-                    <b-icon icon="display" scale="1" variant="warning" style="margin-right: 8px;"></b-icon>
-                    Equipos
-                </b-button>
-                <br>
-                <b-button class="btnMenu" to="/clientes">
-                    <b-icon icon="person" scale="1" variant="info" style="margin-right: 8px;"></b-icon>
-                    Clientes
-                </b-button>
-                <br>
-                <b-button class="btnMenu" to="/configuracion">
-                    <b-icon icon="gear-wide" scale="1" variant="success" style="margin-right: 8px;"></b-icon>
-                    Configuración
-                </b-button>
+            <b-button class="btnMenu" to="/">
+                <b-icon icon="clipboard-data" scale="1" variant="danger" style="margin-right: 8px;"></b-icon>
+                Dashboard
+            </b-button>
+            <br>
+            <b-button class="btnMenu" to="/equipos">
+                <b-icon icon="display" scale="1" variant="warning" style="margin-right: 8px;"></b-icon>
+                Equipos
+            </b-button>
+            <br>
+            <b-button class="btnMenu" to="/clientes">
+                <b-icon icon="building" scale="1" variant="info" style="margin-right: 8px;"></b-icon>
+                Clientes
+            </b-button>
+            <br>
+            <b-button class="btnMenu" to="/configuracion">
+                <b-icon icon="gear-wide" scale="1" variant="success" style="margin-right: 8px;"></b-icon>
+                Configuración
+            </b-button>
         </div>
     </div>
 </template>
@@ -45,7 +45,6 @@ export default {
 
 <style scoped>
 .sidebar {
-    /* Color de fondo gris */
     width: 300px;
     /* Ancho del div */
     height: 100vh;
@@ -86,9 +85,10 @@ export default {
 
 }
 
-.btnMenu{
-    background: #afeffa;
-    color: #001429;
-    border-radius: 20px; /* Bordes redondeados */
+.btnMenu {
+    background: #272729;
+    color: white;
+    border-radius: 20px;
+    /* Bordes redondeados */
 }
 </style>

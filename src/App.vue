@@ -49,7 +49,7 @@ export default {
 
 nav {
   padding: 15px;
-  background-color: #001429; /* Color de fondo para el navbar */
+  background-color: #272729; /* Color de fondo para el navbar */
 }
 
 nav a {
@@ -58,7 +58,7 @@ nav a {
 }
 
 nav a.router-link-exact-active {
-  color: #4dcde5;
+  color: white;
 }
 
 .container {
@@ -69,7 +69,7 @@ nav a.router-link-exact-active {
 
 .sidebar {
   width: 250px; /* Ancho fijo para la sidebar */
-  background-color: #001429; /* Color de fondo para la sidebar */
+  background-color: #272729; /* Color de fondo para la sidebar */
   position: fixed; /* Fija la sidebar a la izquierda */
   height: 100%; /* Altura completa */
   top: 0; /* Alinea al principio de la página */
