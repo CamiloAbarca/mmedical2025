@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'; // Importa mapActions para mapear acciones del store
+import { mapActions, mapGetters } from 'vuex'; // Importa mapActions y mapGetters para mapear acciones y getters del store
 
 export default {
     name: 'AgregarClientesComponent',
@@ -71,9 +71,27 @@ export default {
             }
         };
     },
+    computed: {
+        ...mapGetters(['getClientes']) // Mapea el getter para obtener los clientes
+    },
     methods: {
         ...mapActions(['addCliente']), // Mapea la acción addCliente del store
         onSubmit() {
+            // Validar que la combinación de razón social y centro médico no exista
+            const existingClient = this.getClientes.find(cliente =>
+                cliente.razonSocial === this.formData.razonSocial &&
+                cliente.centroMedico === this.formData.centroMedico
+            );
+
+            if (existingClient) {
+                this.$bvToast.toast('La combinación de razón social y centro médico ya existe. Por favor, ingrese una diferente.', {
+                    title: 'Error',
+                    variant: 'danger',
+                    solid: true
+                });
+                return; // Detener el envío del formulario
+            }
+
             // Llama a la acción del store para agregar el nuevo cliente
             this.addCliente(this.formData);
             // Resetear el formulario después de agregar

@@ -1,6 +1,16 @@
 <template>
     <div class="tabEquipos">
-        <b-table :items="items" :fields="fields" striped bordered hover responsive>
+        <!-- Campo de búsqueda -->
+        <b-form-group class="mb-3">
+            <div class="d-flex align-items-center">
+                <label class="mr-2" for="searchInput">Buscar</label>
+                <b-form-input id="searchInput" v-model="searchQuery" placeholder="Buscar por marca, modelo, estado o ID"
+                    class="form-control-sm" style="width: 300px;"> <!-- Ajusta el ancho según sea necesario -->
+                </b-form-input>
+            </div>
+        </b-form-group>
+
+        <b-table :items="filteredItems" :fields="fields" striped bordered hover responsive>
             <template #cell(fecha_mantencion)="data">
                 <span>{{ formatDate(data.item.fecha_mantencion) }}</span>
             </template>
@@ -136,6 +146,7 @@
             </div>
             <template #modal-footer>
                 <b-button variant="secondary" @click="showCompleteViewModal = false">Cerrar</b-button>
+                <b-button variant="primary" @click="generatePDF">Generar PDF</b-button>
             </template>
         </b-modal>
     </div>
@@ -144,6 +155,8 @@
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import { BButton, BModal, BForm, BFormGroup, BFormInput, BRow, BCol, BFormSelect, BFormTextarea } from 'bootstrap-vue';
+import logo from '@/assets/logomm.png'
+import jsPDF from 'jspdf'; // Importar jsPDF
 
 export default {
     name: 'TablaEquiposComponent',
@@ -170,9 +183,9 @@ export default {
                 { key: 'acciones', label: 'Acciones' },
             ],
             showEditModal: false,
-            showCompleteViewModal: false, // Nueva propiedad para el modal de información completa
+            showCompleteViewModal: false,
             selectedItem: {},
-            clienteInfo: {}, // Nueva propiedad para almacenar la información del cliente
+            clienteInfo: {},
             estadoOptions: [
                 { value: 'En revisión', text: 'En revisión' },
                 { value: 'Cotizado', text: 'Cotizado' },
@@ -182,13 +195,30 @@ export default {
                 { value: 'Garantía', text: 'Garantía' }
             ],
             isEditing: false,
-            calculatedMaintenanceDate: ''
+            calculatedMaintenanceDate: '',
+            searchQuery: '', // Nueva propiedad para almacenar la consulta de búsqueda
+            logo
         };
     },
     computed: {
-        ...mapGetters(['getItems', 'getClientes']), // Asegúrate de incluir getClientes
+        ...mapGetters(['getItems', 'getClientes']),
         items() {
             return this.getItems;
+        },
+        filteredItems() {
+            // Filtrar los items según la búsqueda
+            if (!this.searchQuery) {
+                return this.items; // Si no hay búsqueda, devolver todos los items
+            }
+            const query = this.searchQuery.toLowerCase(); // Convertir a minúsculas para comparación
+            return this.items.filter(item => {
+                return (
+                    item.id.toString().includes(query) || // Filtrar por ID
+                    item.marca.toLowerCase().includes(query) || // Filtrar por marca
+                    item.modelo.toLowerCase().includes(query) || // Filtrar por modelo
+                    item.estado.toLowerCase().includes(query) // Filtrar por estado
+                );
+            });
         }
     },
     methods: {
@@ -208,12 +238,12 @@ export default {
         openCompleteViewModal(item) {
             const clienteId = item.id_cliente;
             this.clienteInfo = this.getClientes.find(cliente => cliente.id === String(clienteId)) || {};
-            this.selectedItem = { ...item }; // Asegúrate de que selectedItem tenga la información del equipo
+            this.selectedItem = { ...item };
             this.showCompleteViewModal = true;
         },
         calculateMaintenanceDate() {
             if (this.selectedItem.fecha_ingreso) {
-                const fechaIngreso = new Date(this.selectedItem.fecha_ingreso)
+                const fechaIngreso = new Date(this.selectedItem.fecha_ingreso);
                 const fechaMantenimiento = new Date(fechaIngreso.setFullYear(fechaIngreso.getFullYear() + 1));
                 this.calculatedMaintenanceDate = fechaMantenimiento.toISOString().substr(0, 10);
             } else {
@@ -255,9 +285,69 @@ export default {
             const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son 0-indexados
             const year = date.getFullYear();
             return `${day}-${month}-${year}`;
+        },
+        generatePDF() {
+            const doc = new jsPDF();
+
+            // Cargar el logo (asegúrate de que la ruta sea correcta)
+            const logo = new Image();
+            logo.src = this.logo; // Cambia esto a la ruta de tu logo
+
+            logo.onload = () => {
+                // Agregar el logo al PDF
+                doc.addImage(logo, 'PNG', 10, 10, 50, 20); // Ajusta las coordenadas y el tamaño según sea necesario
+
+                // Título centrado "Mmedical"
+                doc.setFontSize(22);
+                const title = 'Mmedical';
+                const titleWidth = doc.getTextWidth(title);
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const titleX = (pageWidth - titleWidth) / 2; // Calcular la posición X para centrar
+                doc.text(title, titleX, 40); // Ajusta la posición Y para que esté debajo del logo
+
+                // Agregar un salto de línea bajo el título "Mmedical"
+                const lineHeight = 10; // Altura de la línea
+                const spaceBelowTitle = 10; // Espacio adicional que deseas agregar
+                const nextYPosition = 40 + lineHeight + spaceBelowTitle; // Nueva posición Y para el siguiente texto
+
+                // Título del documento
+                doc.setFontSize(18);
+                doc.text('Información del Equipo', 14, nextYPosition);
+                doc.setFontSize(12);
+                doc.text(`ID Equipo: ${this.selectedItem.id}`, 14, nextYPosition + 10);
+                doc.text(`Marca: ${this.selectedItem.marca}`, 14, nextYPosition + 20);
+                doc.text(`Modelo: ${this.selectedItem.modelo}`, 14, nextYPosition + 30);
+                doc.text(`Nro Serie: ${this.selectedItem.nro_serie}`, 14, nextYPosition + 40);
+                doc.text(`Fecha Ingreso: ${this.formatDate(this.selectedItem.fecha_ingreso)}`, 14, nextYPosition + 50);
+                doc.text(`Fecha Entrega: ${this.formatDate(this.selectedItem.fecha_entrega)}`, 14, nextYPosition + 60);
+                doc.text(`Fecha Mantenimiento: ${this.formatDate(this.selectedItem.fecha_mantencion)}`, 14, nextYPosition + 70);
+                doc.text(`Estado: ${this.selectedItem.estado}`, 14, nextYPosition + 80);
+                doc.text(`Detalle: ${this.selectedItem.detalle}`, 14, nextYPosition + 90);
+                doc.text(`Otro Detalle: ${this.selectedItem.otroDetalle}`, 14, nextYPosition + 100);
+                doc.text(`Accesorios: ${this.selectedItem.accesorios}`, 14, nextYPosition + 110);
+
+                // Agregar un salto de línea antes de la información del cliente
+                doc.text('', 14, nextYPosition + 120); // Esto crea un espacio en blanco
+
+                // Información del Cliente
+                doc.setFontSize(18);
+                doc.text('Información del Cliente', 14, nextYPosition + 130);
+                doc.setFontSize(12);
+                doc.text(`Razón Social: ${this.clienteInfo.razonSocial}`, 14, nextYPosition + 140);
+                doc.text(`RUT: ${this.clienteInfo.rut}`, 14, nextYPosition + 150);
+                doc.text(`Centro Médico: ${this.clienteInfo.centroMedico}`, 14, nextYPosition + 160);
+                doc.text(`Contacto: ${this.clienteInfo.contacto}`, 14, nextYPosition + 170);
+                doc.text(`Teléfono: ${this.clienteInfo.fono}`, 14, nextYPosition + 180);
+                doc.text(`Email: ${this.clienteInfo.email}`, 14, nextYPosition + 190);
+
+                // Guardar el PDF
+                doc.save(`informacion_equipo_${this.selectedItem.id}.pdf`);
+            };
         }
     }
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Aquí puedes agregar estilos específicos si es necesario */
+</style>

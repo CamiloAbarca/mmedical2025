@@ -1,13 +1,32 @@
 <template>
     <div class="tabClientes">
-        <b-table :items="items" :fields="fields" striped bordered hover responsive>
+        <!-- Campo de búsqueda -->
+        <b-form-group class="mb-3">
+            <div class="d-flex align-items-center">
+                <label class="mr-2" for="searchInput">Buscar</label>
+                <b-form-input id="searchInput" v-model="searchQuery" placeholder="Buscar por razón social, RUT o ID"
+                    class="form-control-sm" style="width: 300px;"> <!-- Ajusta el ancho según sea necesario -->
+                </b-form-input>
+            </div>
+        </b-form-group>
+
+        <b-table :items="filteredItems" :fields="fields" striped bordered hover responsive>
             <template #cell(acciones)="data">
-                <b-button @click="openViewModal(data.item)" variant="primary">Ver</b-button>
+                <div class="d-flex align-items-center">
+                    <b-icon icon="eye-fill" @click="openViewModal(data.item)" scale="1" variant="success"
+                        style="cursor: pointer; margin-right: 8px;"></b-icon>
+
+                    <b-icon icon="pencil-fill" @click="openEditModal(data.item)" scale="1" variant="warning"
+                        style="cursor: pointer; margin-right: 8px;"></b-icon>
+
+                    <b-icon icon="trash-fill" @click="confirmDelete(data.item.id)" scale="1" variant="danger"
+                        style="cursor: pointer; margin-right: 8px;"></b-icon>
+                </div>
             </template>
         </b-table>
 
         <!-- Modal para ver y editar la información del cliente -->
-        <b-modal v-model="showEditModal" :title="`Cliente ID #${selectedItem.id}`">
+        <b-modal v-model="showEditModal" :title="`Cliente ID #${selectedItem.id}`" size="lg">
             <div>
                 <b-form @submit.prevent="isEditing ? saveChanges() : null">
                     <b-row>
@@ -46,6 +65,17 @@
                 <b-button v-else @click="isEditing = true" variant="primary">Editar</b-button>
             </template>
         </b-modal>
+
+        <!-- Modal de confirmación para eliminar -->
+        <b-modal v-model="showDeleteModal" title="Confirmar Eliminación">
+            <div>
+                <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+            </div>
+            <template #modal-footer>
+                <b-button variant="secondary" @click="showDeleteModal = false">Cancelar</b-button>
+                <b-button variant="danger" @click="deleteCliente">Eliminar</b-button>
+            </template>
+        </b-modal>
     </div>
 </template>
 
@@ -74,28 +104,64 @@ export default {
                 { key: 'acciones', label: 'Acciones' },
             ],
             showEditModal: false,
+            showDeleteModal: false,
             selectedItem: {},
             isEditing: false,
+            searchQuery: '' // Nueva propiedad para almacenar la consulta de búsqueda
         };
     },
     computed: {
         ...mapGetters(['getClientes']),
         items() {
             return this.getClientes;
+        },
+        filteredItems() {
+            // Filtrar los items según la búsqueda
+            if (!this.searchQuery) {
+                return this.items; // Si no hay búsqueda, devolver todos los items
+            }
+            const query = this.searchQuery.toLowerCase(); // Convertir a minúsculas para comparación
+            return this.items.filter(item => {
+                return (
+                    item.id.toString().includes(query) || // Filtrar por ID
+                    item.razonSocial.toLowerCase().includes(query) || // Filtrar por razón social
+                    item.rut.toLowerCase().includes(query) || // Filtrar por RUT
+                    item.centroMedico.toLowerCase().includes(query) // Filtrar por centro médico
+                );
+            });
         }
     },
     methods: {
-        ...mapActions(['updateCliente']),
+        ...mapActions(['updateCliente', 'deleteCliente']),
         openViewModal(item) {
             this.selectedItem = { ...item };
             this.isEditing = false;
             this.showEditModal = true;
         },
+        openEditModal(item) {
+            this.selectedItem = { ...item };
+            this.isEditing = true;
+            this.showEditModal = true;
+        },
+        confirmDelete(itemId) {
+            this.selectedItem.id = itemId; // Guardamos el ID del cliente a eliminar
+            this.showDeleteModal = true; // Abrimos el modal de confirmación
+        },
+        async deleteCliente() {
+            try {
+                await this.$store.dispatch('deleteCliente', this.selectedItem.id); // Llamamos a la acción para eliminar el cliente
+                console.log('Cliente eliminado:', this.selectedItem.id);
+                this.showDeleteModal = false; // Cerramos el modal de confirmación
+            } catch (error) {
+                console.error('Error al eliminar el cliente:', error);
+            }
+        },
         async saveChanges() {
             try {
-                await this.updateCliente(this.selectedItem);
+                await this.updateCliente(this.selectedItem); // Actualizamos el cliente en el store
                 console.log('Cambios guardados para el cliente:', this.selectedItem);
-                this.showEditModal = false;
+                this.showEditModal = false; // Cerramos el modal
+                this.isEditing = false; // Reiniciamos el estado de edición
             } catch (error) {
                 console.error('Error al guardar los cambios:', error);
             }

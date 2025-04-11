@@ -36,8 +36,7 @@
                 </b-col>
                 <b-col md="6">
                     <b-form-group label="Fecha de Entrega" label-for="fecha_entrega">
-                        <b-form-input type="date" id="fecha_entrega" v-model="formData.fecha_entrega"
-                            required></b-form-input>
+                        <b-form-input type="date" id="fecha_entrega" v-model="formData.fecha_entrega"></b-form-input>
                     </b-form-group>
                 </b-col>
             </b-row>
@@ -57,7 +56,6 @@
                 </b-col>
             </b-row>
 
-            <!-- Nueva fila para los textarea -->
             <b-row>
                 <b-col md="4">
                     <b-form-group label="Detalle" label-for="detalle">
@@ -82,7 +80,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'; // Importa mapActions y mapGetters para mapear acciones y getters del store
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
     name: 'AgregarEquiposComponent',
@@ -113,13 +111,12 @@ export default {
         };
     },
     computed: {
-        ...mapGetters(['getClientes']), // Mapea el getter para obtener los clientes
+        ...mapGetters(['getClientes', 'getEquipos']), // Mapea el getter para obtener los clientes y equipos
         clienteOptions() {
-            // Mapea los clientes a un formato adecuado para el b-form-select
             return this.getClientes.map(cliente => {
                 return {
                     value: cliente.id,
-                    text: `${cliente.razonSocial} - ${cliente.centroMedico}` // Combina razonSocial y centroMedico
+                    text: `${cliente.razonSocial} - ${cliente.centroMedico}`
                 };
             });
         }
@@ -127,6 +124,17 @@ export default {
     methods: {
         ...mapActions(['addItem']), // Mapea la acción addItem del store
         onSubmit() {
+            // Validar que el número de serie no exista
+            const existingEquipment = this.getEquipos.find(equipo => equipo.nro_serie === this.formData.nro_serie);
+            if (existingEquipment) {
+                this.$bvToast.toast('El número de serie ya existe. Por favor, ingrese uno diferente.', {
+                    title: 'Advertencia!',
+                    variant: 'warning',
+                    solid: true
+                });
+                return; // Detener el envío del formulario
+            }
+
             // Calcular la fecha de mantenimiento como un año después de la fecha de ingreso
             if (this.formData.fecha_ingreso) {
                 const fechaIngreso = new Date(this.formData.fecha_ingreso);

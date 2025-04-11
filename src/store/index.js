@@ -48,6 +48,9 @@ export default new Vuex.Store({
     },
     getClientes(state) {
       return state.clientes; // Getter para obtener los clientes
+    },
+    getEquipos(state) {
+      return state.items; // Getter para obtener los equipos
     }
   },
   mutations: {
@@ -71,6 +74,9 @@ export default new Vuex.Store({
       if (index !== -1) {
         Vue.set(state.clientes, index, updatedCliente); // Usar Vue.set para asegurar la reactividad
       }
+    },
+    DELETE_CLIENTE(state, clienteId) {
+      state.clientes = state.clientes.filter(cliente => cliente.id !== clienteId); // Filtra el cliente a eliminar
     }
   },
   actions: {
@@ -88,6 +94,9 @@ export default new Vuex.Store({
     },
     updateCliente({ commit }, cliente) {
       commit('UPDATE_CLIENTE', cliente); // Llama a la mutación para actualizar el cliente
+    },
+    async deleteCliente({ commit }, clienteId) {
+      commit('DELETE_CLIENTE', clienteId); // Llama a la mutación para eliminar el cliente
     }
   },
   modules: {
