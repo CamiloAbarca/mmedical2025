@@ -35,7 +35,7 @@
                     </b-form-group>
                 </b-col>
                 <b-col md="6">
-                    <b-form-group label="Fecha de Entrega" label-for="fecha_entrega">
+                    <b-form-group label="Fecha de Entrega (Opcional)" label-for="fecha_entrega">
                         <b-form-input type="date" id="fecha_entrega" v-model="formData.fecha_entrega"></b-form-input>
                     </b-form-group>
                 </b-col>
@@ -49,7 +49,7 @@
                     </b-form-group>
                 </b-col>
                 <b-col md="6">
-                    <b-form-group label="ID Cliente" label-for="id_cliente">
+                    <b-form-group label="Cliente" label-for="id_cliente">
                         <b-form-select id="id_cliente" v-model="formData.id_cliente" :options="clienteOptions"
                             required></b-form-select>
                     </b-form-group>

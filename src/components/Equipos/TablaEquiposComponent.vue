@@ -4,7 +4,7 @@
         <b-form-group class="mb-3">
             <div class="d-flex align-items-center">
                 <label class="mr-2" for="searchInput">Buscar</label>
-                <b-form-input id="searchInput" v-model="searchQuery" placeholder="Buscar por marca, modelo, estado o ID"
+                <b-form-input id="searchInput" v-model="searchQuery" placeholder="Buscar por marca, modelo,nro de serie, estado o ID"
                     class="form-control-sm" style="width: 300px;"> <!-- Ajusta el ancho según sea necesario -->
                 </b-form-input>
             </div>
@@ -216,6 +216,7 @@ export default {
                     item.id.toString().includes(query) || // Filtrar por ID
                     item.marca.toLowerCase().includes(query) || // Filtrar por marca
                     item.modelo.toLowerCase().includes(query) || // Filtrar por modelo
+                    item.nro_serie.toLowerCase().includes(query) || // Filtrar por nro de serie
                     item.estado.toLowerCase().includes(query) // Filtrar por estado
                 );
             });

@@ -5,6 +5,6 @@ module.exports = defineConfig({
 
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
-    ? '/mmedical2025/' // Cambia esto por el nombre de tu repositorio
+    ? '/mmedical2025/'
     : '/'
 }
